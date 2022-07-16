@@ -2,6 +2,8 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
+
+from api.models import Posts
 from .serializers import ChangePasswordSerializer, RegisterSerializer
 
 User = get_user_model()
@@ -22,6 +24,10 @@ def response_data(message=None, status_code=None, data=None):
 
 def get_key_error_from_serializer_errors(serializer_error):
     return [key for key in serializer_error]
+
+
+class LoginAPIView(generics.CreateAPIView):
+
 
 
 class RegisterAPIView(generics.CreateAPIView):
@@ -78,7 +84,7 @@ class ChangePasswordAPIView(generics.CreateAPIView):
             return response_data(status_code=0, message='server error')
 
 
-class FollowingAPIView(generics.RetrieveAPIView):
+class FollowAPIView(generics.RetrieveAPIView):
     def get_object(self):
         return self.kwargs.get('pk')
             
@@ -99,7 +105,7 @@ class FollowingAPIView(generics.RetrieveAPIView):
             return response_data(status_code=0, message='server error')
 
 
-class UnFollowingAPIView(generics.RetrieveAPIView):
+class UnFollowAPIView(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.kwargs.get('pk')
@@ -118,5 +124,47 @@ class UnFollowingAPIView(generics.RetrieveAPIView):
             following_user.followers.remove(follower_user)
             following_user.save()
         except :
+            return response_data(status_code=0, message='server error')
+
+
+class LikeAPIView(generics.RetrieveAPIView):
+
+    def get_object(self):
+        return self.kwargs.get('pk')
+    
+    def get_user(self):
+        return self.request.user
+    
+    def get(self, request, *args, **kwargs):
+        try:
+            liked_post_id = self.get_object()
+            if not Posts.objects.filter(id=liked_post_id).exists():
+                return response_data(status_code=0, message='post not found')
+            user = request.user
+            liked_post = Posts.objects.get(id=liked_post_id)
+            liked_post.liked(user)
+            response_data(status_code=1, message='Post Liked')
+        except:
+            return response_data(status_code=0, message='server error')
+
+
+class DislikeAPIView(generics.RetrieveAPIView):
+
+    def get_object(self):
+        return self.kwargs.get('pk')
+    
+    def get_user(self):
+        return self.request.user
+    
+    def get(self, request, *args, **kwargs):
+        try:
+            liked_post_id = self.get_object()
+            if not Posts.objects.filter(id=liked_post_id).exists():
+                return response_data(status_code=0, message='post not found')
+            user = request.user
+            liked_post = Posts.objects.get(id=liked_post_id)
+            liked_post.like.remove(user)
+            response_data(status_code=1, message='Post Disliked')
+        except:
             return response_data(status_code=0, message='server error')
 

@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import BaseUserManager, AbstractUser, PermissionsMixin
-from django.contrib.auth.hashers import make_password
 
 
 
@@ -49,7 +48,6 @@ class User(AbstractUser, PermissionsMixin):
     birth_date = models.DateField(null=True, blank=True, verbose_name='تاریخ تولد')
     registered_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ ثبت نام')
 
-
     USERNAME_FIELD = 'email'
     objects = UserManager()
 
@@ -62,43 +60,34 @@ class Followers(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.CASCADE, related_name='user_info', verbose_name='کاربر')
     followers = models.ManyToManyField(User, related_name='user_followers', verbose_name='دنبال کننده ها' )
     following = models.ManyToManyField(User, related_name='user_following', verbose_name='دنبال شونده ها')
-
-
-class StoryPost(models.Model):
-    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE, related_name='author', verbose_name='نویسنده')
-    title = models.CharField(max_length=100, verbose_name='عنوان')
-    image = models.ImageField(upload_to='images/stories/', verbose_name='عکس')
-    caption = models.TextField(verbose_name='متن')
-    like = models.ManyToManyField(User, related_name='user_liked', verbose_name='لایک')
     
-    def liked(self, user):
-        self.like.add(user)
-        self.save()
+    class Meta:
+        verbose_name = 'دنبال کننده و دنبال شونده'
+        verbose_name_plural = 'دنبال کننده ها و دنبال شونده ها'
 
-class ImagePost(models.Model):
+
+class Category(models.Model):
+    title = models.CharField(max_length=100, verbose_name='عنوان دسته بندی')
+
+    class Meta:
+        verbose_name = 'دسته بندی'
+        verbose_name_plural = 'دسته بندی ها'
+
+
+class Posts(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.CASCADE, related_name='author', verbose_name='صاحب پست')
     title = models.CharField(max_length=100, null=True, blank=True, verbose_name='عنوان')
     image = models.CharField(upload_to='images/images/', verbose_name='عکس')
-    caption = models.TextField(null=True, blank=True, verbose_name='کپشن')
-    like = models.ManyToManyField(User, related_name='user_liked', verbose_name='لایک')
-
-    def liked(self, user):
-        self.like.add(user)
-        self.save()
-
-
-class VideoPost(models.Model):
-    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, related_name='author', verbose_name='')
-    title = models.CharField(max_length=100, null=True, blank=True, verbose_name='عنوان')
-    video = models.FileField(upload_to='videos/videos/', verbose_name='ویدیو')
+    category = models.ForeignKey(Category, related_name='post_category',)
     caption = models.TextField(null=True, blank=True, verbose_name='کپشن')
     like = models.ManyToManyField(User, related_name='user_liked', verbose_name='لایک')
     view = models.PositiveIntegerField(default=0, verbose_name='بازدید')
-
+    video = models.FileField(upload_to='videos/videos/', verbose_name='ویدیو')
+    
     def liked(self, user):
         self.like.add(user)
         self.save()
-    
-    def viewed(self):
-        self.view += 1
-        self.save()
+
+    class Meta:
+        verbose_name = 'پست'
+        verbose_name_plural = 'پست ها'
