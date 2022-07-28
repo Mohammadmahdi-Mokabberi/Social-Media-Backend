@@ -228,7 +228,7 @@ class PostDetailAPIView(generics.RetrieveAPIView):
         return self.kwargs.get('pk')
     
     def get(self, request, *args, **kwargs):
-        #try :
+        try :
             post_id = self.get_object()
             if not Posts.objects.filter(id=post_id).exists():
                 return response_data(status_code=0, message='post not found')
@@ -236,5 +236,7 @@ class PostDetailAPIView(generics.RetrieveAPIView):
             post.viewed()
             serializer = self.get_serializer(post)
             return response_data(status_code=1, data=serializer.data)
-        #except:
+        except:
             return response_data(status_code=0, message='server error')
+
+
