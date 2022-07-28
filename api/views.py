@@ -2,9 +2,11 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.models import Posts
-from .serializers import ChangePasswordSerializer, RegisterSerializer
+from .serializers import (ChangePasswordSerializer, LoginSerializer,RegisterSerializer,
+                          PostsSerializer, PostDetailSerializer)
 
 User = get_user_model()
 
@@ -27,7 +29,41 @@ def get_key_error_from_serializer_errors(serializer_error):
 
 
 class LoginAPIView(generics.CreateAPIView):
+    serializer_class = LoginSerializer
 
+    def post(self, request, *args, **kwargs):
+        try:
+            email = request.data['email']
+            username = request.data['username']
+            password = request.data['password']
+            if email != '':
+                if not User.objects.filter(email=email).exists():
+                    return response_data(status_code=0, message='User  not found')
+                password = make_password(password)
+                if not User.objects.filter(email=email, password=password).exists:
+                    return response_data(status_code=0, message='password not valid')
+                user = User.objects.get(email=email)
+                refresh = RefreshToken.for_user(user)
+                data = {
+                    'access': str(refresh.access_token)
+                }
+                return response_data(status_code=1, data=data)
+
+            if username !='':
+                if not User.objects.filter(username=username).exists():
+                    return response_data(status_code=0, message='User  not found')
+                password = make_password(password)
+                if not User.objects.filter(username=username, password=password).exists:
+                    return response_data(status_code=0, message='password not valid')
+                user = User.objects.get(username=username)
+                refresh = RefreshToken.for_user(user)
+                data = {
+                    'access': str(refresh.access_token)
+                }
+                return response_data(status_code=1, data=data)
+
+        except:
+            return response_data(status_code=0, message='server error')
 
 
 class RegisterAPIView(generics.CreateAPIView):
@@ -40,13 +76,17 @@ class RegisterAPIView(generics.CreateAPIView):
                 fields_error = get_key_error_from_serializer_errors(serializer.errors)
                 return Response(status=status.HTTP_400_BAD_REQUEST, data=fields_error)
             username = request.data['username']
+            email = request.data['email']
             password = request.data['password']
             if not len(password)>8 : 
                 response_data(status_code=0, message='password is not long enough')
+            if User.objects.filter(username=username).exists():
+                return response_data(status_code=0, message='Username already exist')
+            if User.objects.filter(email=email).exists():
+                return response_data(status_code=0, message='Email already exist')
             password = make_password(password)
             first_name = request.data['first_name']
             last_name = request.data['last_name']
-            email = request.data['email']
             age = request.data['age']
             birth_date = request.data['birth_date']
             User.objects.create(username=username, password=password, first_name=first_name, last_name=last_name, email=email, age=age, birth_date=birth_date)
@@ -67,13 +107,12 @@ class ChangePasswordAPIView(generics.CreateAPIView):
             user = self.get_object()
             old_password = request.data['old_password']
             new_password1 = request.data['new_password1']
-            new_password2 = request.data['new_password1']
+            new_password2 = request.data['new_password2']
             
             if new_password1 != new_password2 :
                 return response_data(status_code=0, message='new passwords are not same')
             
-            old_password = make_password(old_password)
-            if user.password != old_password:
+            if not user.check_password(old_password):
                 return response_data(status_code=0, message='old password is not correct')
             
             new_password = make_password(new_password1)
@@ -143,7 +182,7 @@ class LikeAPIView(generics.RetrieveAPIView):
             user = request.user
             liked_post = Posts.objects.get(id=liked_post_id)
             liked_post.liked(user)
-            response_data(status_code=1, message='Post Liked')
+            return response_data(status_code=1)
         except:
             return response_data(status_code=0, message='server error')
 
@@ -164,7 +203,38 @@ class DislikeAPIView(generics.RetrieveAPIView):
             user = request.user
             liked_post = Posts.objects.get(id=liked_post_id)
             liked_post.like.remove(user)
-            response_data(status_code=1, message='Post Disliked')
+            return response_data(status_code=1)
         except:
             return response_data(status_code=0, message='server error')
 
+
+class PostsAPIView(generics.ListAPIView):
+    serializer_class = PostsSerializer
+
+    def get_queryset(self):
+        return Posts.objects.all()
+    def get(self, request, *args, **kwargs):
+        try:
+            queryset = self.get_queryset()
+            serializer = self.get_serializer(queryset, many=True)
+            return response_data(status_code=1, data=serializer.data)        
+        except:
+            return response_data(status_code=0, message='server error')
+
+
+class PostDetailAPIView(generics.RetrieveAPIView):
+    serializer_class = PostDetailSerializer
+    def get_object(self):
+        return self.kwargs.get('pk')
+    
+    def get(self, request, *args, **kwargs):
+        #try :
+            post_id = self.get_object()
+            if not Posts.objects.filter(id=post_id).exists():
+                return response_data(status_code=0, message='post not found')
+            post = Posts.objects.get(id=post_id)
+            post.viewed()
+            serializer = self.get_serializer(post)
+            return response_data(status_code=1, data=serializer.data)
+        #except:
+            return response_data(status_code=0, message='server error')

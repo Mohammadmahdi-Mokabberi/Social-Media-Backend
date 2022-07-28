@@ -42,13 +42,14 @@ class User(AbstractUser, PermissionsMixin):
     is_admin = models.BooleanField(default=False, verbose_name='ادمین؟')
     first_name = models.CharField(max_length=100, null=True, blank=True, verbose_name='نام')
     last_name = models.CharField(max_length=100, null=True, blank=True, verbose_name='نام خانوادگی')
-    username = models.CharField(max_length=100, unqique=True, verbose_name='نام کاربری')
-    email = models.EmailField(_('email address'), unique=True, verbose_name='ایمیل')
+    username = models.CharField(max_length=100, unique=True, verbose_name='نام کاربری')
+    email = models.EmailField(_('email address'), unique=True)
     age = models.CharField(max_length=3, null=True, blank=True, verbose_name='سن')
     birth_date = models.DateField(null=True, blank=True, verbose_name='تاریخ تولد')
     registered_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ ثبت نام')
 
     USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
     objects = UserManager()
 
     class Meta:
@@ -77,15 +78,19 @@ class Category(models.Model):
 class Posts(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.CASCADE, related_name='author', verbose_name='صاحب پست')
     title = models.CharField(max_length=100, null=True, blank=True, verbose_name='عنوان')
-    image = models.CharField(upload_to='images/images/', verbose_name='عکس')
-    category = models.ForeignKey(Category, related_name='post_category',)
+    image = models.ImageField(upload_to='images/', blank=True, null=True, verbose_name='عکس')
+    category = models.ManyToManyField(Category, related_name='post_category',)
     caption = models.TextField(null=True, blank=True, verbose_name='کپشن')
-    like = models.ManyToManyField(User, related_name='user_liked', verbose_name='لایک')
+    like = models.ManyToManyField(User, blank=True, related_name='user_liked', verbose_name='لایک')
     view = models.PositiveIntegerField(default=0, verbose_name='بازدید')
-    video = models.FileField(upload_to='videos/videos/', verbose_name='ویدیو')
+    video = models.FileField(upload_to='videos/', blank=True, null=True, verbose_name='ویدیو')
     
     def liked(self, user):
         self.like.add(user)
+        self.save()
+
+    def viewed(self):
+        self.view += 1 
         self.save()
 
     class Meta:
