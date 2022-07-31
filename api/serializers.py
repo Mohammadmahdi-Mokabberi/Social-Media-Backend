@@ -32,6 +32,27 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'title']
 
 
+class UserPostSerializer(serializers.ModelSerializer):
+    content = serializers.SerializerMethodField(source='get_content')
+    author = serializers.SerializerMethodField(source='get_author')
+
+    class Meta:
+        model = Posts
+        fields = [
+            'content',
+            'author',
+        ]
+    
+    def get_content(self,obj):
+        if obj.image != None:
+            return obj.image
+        return obj.video
+
+    def get_author(self,obj):
+        author = obj.user
+        return author.id
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -99,3 +120,59 @@ class PostDetailSerializer(serializers.ModelSerializer):
         if obj.video != None:
             return obj.video
         return 'None'
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField(source='get_name')
+    posts = serializers.SerializerMethodField(source='get_posts')
+    followers_count = serializers.SerializerMethodField(source='get_followers_count')
+
+    class Meta:
+        model = User
+        fields = [
+            'name',
+            'posts',
+            'followers_count',
+        ]
+    
+    def get_name(self,obj):
+        if obj.username != '':
+            return obj.username
+        return obj.email
+    
+    def get_posts(self,obj):
+        qs = obj.author.all()
+        serializer = UserPostSerializer(qs, many=True)
+        return serializer.data
+    
+    def get_followers_count(self,obj):
+        return obj.user_info.count()
+
+
+class PostsExploreSerializer(serializers.ModelSerializer):
+    top_ten_view = serializers.SerializerMethodField(source='get_top_view')
+    top_ten_like = serializers.SerializerMethodField(source='get_top_like')
+    top_ten_new = serializers.SerializerMethodField(source='get_top_new')
+
+    class Meta:
+        model = Posts
+        fields = [
+            'top_ten_view',
+            'top_ten_like',
+            'top_ten_new',
+        ]
+    
+    def get_top_view(self):
+        posts = Posts.objects.all().order_by('-view')[:10]
+        serializer = UserPostSerializer(posts,many=True)
+        return serializer.data
+
+    def get_top_like(self):
+        posts = Posts.objects.all().order_by('-like')[:10]
+        serializer = UserPostSerializer(posts,many=True)
+        return serializer.data
+    
+    def get_top_new(self):
+        posts = Posts.objects.all().order_by('-created_at')[:10]
+        serializer = UserPostSerializer(posts,many=True)
+        return serializer.data

@@ -84,7 +84,9 @@ class Posts(models.Model):
     like = models.ManyToManyField(User, blank=True, related_name='user_liked', verbose_name='لایک')
     view = models.PositiveIntegerField(default=0, verbose_name='بازدید')
     video = models.FileField(upload_to='videos/', blank=True, null=True, verbose_name='ویدیو')
-    
+    created_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ ساخت')
+    updated_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ تغییر')
+
     def liked(self, user):
         self.like.add(user)
         self.save()

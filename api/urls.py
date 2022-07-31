@@ -1,15 +1,18 @@
 from django.urls import path
-from .views import (LoginAPIView, ChangePasswordAPIView, RegisterAPIView,
-                    PostDetailAPIView, PostsAPIView, FollowAPIView, 
-                    UnFollowAPIView, LikeAPIView, DislikeAPIView)
+from .views import (LoginAPIView, ChangePasswordAPIView, PostsExploreAPIView, RegisterAPIView,
+                    PostDetailAPIView, PostsAPIView, FollowAPIView,
+                    UnFollowAPIView, LikeAPIView, DislikeAPIView,
+                    UserProfileAPIView)
 urlpatterns = [
-    path('posts', PostsAPIView.as_view(),),
-    path('post/<int:pk>', PostDetailAPIView.as_view(),),
-    path('post/<int:pk>/like', LikeAPIView.as_view(),),
-    path('post/<int:pk>/dislike', DislikeAPIView.as_view(),),
-    path('register/', RegisterAPIView.as_view(),),
-    path('login/', LoginAPIView.as_view(),),
-    path('change-password/', ChangePasswordAPIView.as_view()),
-    path('follow/<int:pk>', FollowAPIView.as_view()),
-    path('unfollow/<int:pk>', UnFollowAPIView.as_view()),
+    path('v1/posts/all/', PostsAPIView.as_view(),),
+    path('v1/posts/explore/',PostsExploreAPIView.as_view(),),
+    path('v1/posts/<int:pk>/', PostDetailAPIView.as_view(),),
+    path('v1/posts/<int:pk>/like/', LikeAPIView.as_view(),),
+    path('v1/posts/<int:pk>/dislike/', DislikeAPIView.as_view(),),
+    path('v1/auth/register/', RegisterAPIView.as_view(),),
+    path('v1/auth/login/', LoginAPIView.as_view(),),
+    path('v1/auth/change-password/', ChangePasswordAPIView.as_view()),
+    path('v1/user/follow/<int:pk>/', FollowAPIView.as_view()),
+    path('v1/user/unfollow/<int:pk>/', UnFollowAPIView.as_view()),
+    path('v1/user/user-profile/<int:pk>/',UserProfileAPIView.as_view(),),
 ]

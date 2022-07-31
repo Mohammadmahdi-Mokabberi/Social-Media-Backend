@@ -5,8 +5,9 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.models import Posts
-from .serializers import (ChangePasswordSerializer, LoginSerializer,RegisterSerializer,
-                          PostsSerializer, PostDetailSerializer)
+from .serializers import (ChangePasswordSerializer, LoginSerializer, RegisterSerializer,
+                          PostsSerializer, PostDetailSerializer, UserProfileSerializer,
+                          PostsExploreSerializer)
 
 User = get_user_model()
 
@@ -213,6 +214,7 @@ class PostsAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         return Posts.objects.all()
+
     def get(self, request, *args, **kwargs):
         try:
             queryset = self.get_queryset()
@@ -240,3 +242,32 @@ class PostDetailAPIView(generics.RetrieveAPIView):
             return response_data(status_code=0, message='server error')
 
 
+class UserProfileAPIView(generics.ListAPIView):
+    serializer_class = UserProfileSerializer
+    
+    def get_object(self):
+        return self.kwargs.get('pk')
+    
+    def get_queryset(self):
+        id = self.get_object()
+        user = User.objects.get(id=id)
+        return user
+
+    def get(self, request, *args, **kwargs):
+        try :
+            user = self.get_queryset()
+            serializer = self.get_serializer(user)
+            return response_data(status_code=1, data=serializer.data)
+        except:
+            return response_data(status_code=0, message='server error')
+
+
+class PostsExploreAPIView(generics.ListAPIView):
+    serializer_class = PostsExploreSerializer
+    
+    def get(self, request, *args, **kwargs):
+        try:
+            serializer = self.get_serializer()
+            return response_data(status_code=1, data=serializer.data)
+        except:
+            return response_data(status_code=0, message='server error')
