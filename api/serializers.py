@@ -29,7 +29,7 @@ class PostsSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta :
         model = Category
-        fields = ['id', 'title']
+        fields = ['id', 'title', 'image', 'video']
 
 
 class UserPostSerializer(serializers.ModelSerializer):
@@ -148,31 +148,41 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_followers_count(self,obj):
         return obj.user_info.count()
 
+'''
+class PostsCategoryExploreSerializer(serializers.ModelSerializer):
 
-class PostsExploreSerializer(serializers.ModelSerializer):
-    top_ten_view = serializers.SerializerMethodField(source='get_top_view')
-    top_ten_like = serializers.SerializerMethodField(source='get_top_like')
-    top_ten_new = serializers.SerializerMethodField(source='get_top_new')
+    top_view = serializers.SerializerMethodField(source='get_top_view')
+    top_like = serializers.SerializerMethodField(source='get_top_like')
+    top_new = serializers.SerializerMethodField(source='get_top_new')
 
     class Meta:
         model = Posts
         fields = [
-            'top_ten_view',
-            'top_ten_like',
-            'top_ten_new',
+            'top_view',
+            'top_like',
+            'top_new',
         ]
     
-    def get_top_view(self):
-        posts = Posts.objects.all().order_by('-view')[:10]
+    def get_top_view(self,obj):
+        posts = obj.order_by('-view')[:10]
+        print(posts)
         serializer = UserPostSerializer(posts,many=True)
         return serializer.data
 
-    def get_top_like(self):
-        posts = Posts.objects.all().order_by('-like')[:10]
+    def get_top_like(self,obj):
+        posts = obj.order_by('-like')[:10]
         serializer = UserPostSerializer(posts,many=True)
         return serializer.data
     
-    def get_top_new(self):
-        posts = Posts.objects.all().order_by('-created_at')[:10]
+    def get_top_new(self,obj):
+        posts = obj.order_by('-created_at')[:10]
         serializer = UserPostSerializer(posts,many=True)
         return serializer.data
+'''
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = ['id', 'title']

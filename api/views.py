@@ -4,10 +4,10 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from api.models import Posts
-from .serializers import (ChangePasswordSerializer, LoginSerializer, RegisterSerializer,
-                          PostsSerializer, PostDetailSerializer, UserProfileSerializer,
-                          PostsExploreSerializer)
+from api.models import Category, Posts
+from .serializers import (CategorySerializer, ChangePasswordSerializer, LoginSerializer, 
+                          RegisterSerializer,PostsSerializer, PostDetailSerializer,
+                          UserProfileSerializer)
 
 User = get_user_model()
 
@@ -262,12 +262,33 @@ class UserProfileAPIView(generics.ListAPIView):
             return response_data(status_code=0, message='server error')
 
 
-class PostsExploreAPIView(generics.ListAPIView):
-    serializer_class = PostsExploreSerializer
-    
+class CategoryAPIView(generics.ListAPIView):
+    serializer_class = CategorySerializer
+
+    def get_queryset(self):
+        return Category.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        try :
+            queryset = self.get_queryset()
+            serializer = self.get_serializer(queryset,many=True)
+            return response_data(status_code=1, data=serializer.data)
+        except :
+            return response_data(status_code=0, message='server error')
+
+
+class PostsCategoryExploreAPIView(generics.ListAPIView):
+    serializer_class = PostsSerializer
+
     def get(self, request, *args, **kwargs):
         try:
-            serializer = self.get_serializer()
+            title =kwargs.get('title')
+            if not Category.objects.filter(title=title).exists():
+                return response_data(status_code=0, message='Category not found')
+            category = Category.objects.get(title=title)
+            posts = category.post_category.all()
+            serializer = self.get_serializer(posts,many=True)
             return response_data(status_code=1, data=serializer.data)
         except:
             return response_data(status_code=0, message='server error')
+
