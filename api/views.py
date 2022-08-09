@@ -1,3 +1,4 @@
+from turtle import title
 from django.db.models import Q
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -288,6 +289,9 @@ class PostsCategoryExploreAPIView(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         try:
             category_title = request.data['category_title']
+            for title in category_title:
+                if not Category.objects.filter(title=title):
+                    return response_data(status_code=0, message=f'No category found by name {title}')
             categories = reduce(operator.and_ , (Q(category__title=cat) for cat in category_title) )
             posts = Posts.objects.exclude(~categories)
             serializer = PostsSerializer(posts, many=True)
