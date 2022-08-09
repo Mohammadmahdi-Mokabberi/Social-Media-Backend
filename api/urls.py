@@ -9,7 +9,7 @@ urlpatterns = [
     path('v1/posts/<int:pk>/like/', LikeAPIView.as_view(),),
     path('v1/posts/<int:pk>/dislike/', DislikeAPIView.as_view(),),
     path('v1/category/',CategoryAPIView.as_view(),),
-    path('v1/category/explore/<str:title>',PostsCategoryExploreAPIView.as_view(),),
+    path('v1/category/explore/',PostsCategoryExploreAPIView.as_view(),),
     path('v1/auth/register/', RegisterAPIView.as_view(),),
     path('v1/auth/login/', LoginAPIView.as_view(),),
     path('v1/auth/change-password/', ChangePasswordAPIView.as_view()),

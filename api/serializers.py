@@ -148,6 +148,20 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_followers_count(self,obj):
         return obj.user_info.count()
 
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = ['id', 'title']
+
+
+class CategoryExploreSerializer(serializers.Serializer):
+    category_title = serializers.CharField()
+
+
+class MultiCategoryExploreSerializer(serializers.Serializer):
+    category_title = serializers.ListField()
 '''
 class PostsCategoryExploreSerializer(serializers.ModelSerializer):
 
@@ -181,8 +195,4 @@ class PostsCategoryExploreSerializer(serializers.ModelSerializer):
 '''
 
 
-class CategorySerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = Category
-        fields = ['id', 'title']

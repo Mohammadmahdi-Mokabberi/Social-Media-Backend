@@ -1,11 +1,16 @@
+from django.db.models import Q
 from rest_framework import generics, status
 from rest_framework.response import Response
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from functools import reduce
+import operator
+
 from api.models import Category, Posts
 from .serializers import (CategorySerializer, ChangePasswordSerializer, LoginSerializer, 
+                          CategoryExploreSerializer, MultiCategoryExploreSerializer,
                           RegisterSerializer,PostsSerializer, PostDetailSerializer,
                           UserProfileSerializer)
 
@@ -277,18 +282,15 @@ class CategoryAPIView(generics.ListAPIView):
             return response_data(status_code=0, message='server error')
 
 
-class PostsCategoryExploreAPIView(generics.ListAPIView):
-    serializer_class = PostsSerializer
+class PostsCategoryExploreAPIView(generics.CreateAPIView):
+    serializer_class = MultiCategoryExploreSerializer
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         try:
-            title =kwargs.get('title')
-            if not Category.objects.filter(title=title).exists():
-                return response_data(status_code=0, message='Category not found')
-            category = Category.objects.get(title=title)
-            posts = category.post_category.all()
-            serializer = self.get_serializer(posts,many=True)
+            category_title = request.data['category_title']
+            categories = reduce(operator.and_ , (Q(category__title=cat) for cat in category_title) )
+            posts = Posts.objects.exclude(~categories)
+            serializer = PostsSerializer(posts, many=True)
             return response_data(status_code=1, data=serializer.data)
         except:
             return response_data(status_code=0, message='server error')
-
