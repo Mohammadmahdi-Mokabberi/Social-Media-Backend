@@ -1,4 +1,3 @@
-from turtle import title
 from django.db.models import Q
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -11,7 +10,7 @@ import operator
 
 from api.models import Category, Posts
 from .serializers import (CategorySerializer, ChangePasswordSerializer, LoginSerializer, 
-                          CategoryExploreSerializer, MultiCategoryExploreSerializer,
+                          CategoryExploreSerializer,
                           RegisterSerializer,PostsSerializer, PostDetailSerializer,
                           UserProfileSerializer)
 
@@ -284,7 +283,7 @@ class CategoryAPIView(generics.ListAPIView):
 
 
 class PostsCategoryExploreAPIView(generics.CreateAPIView):
-    serializer_class = MultiCategoryExploreSerializer
+    serializer_class = CategoryExploreSerializer
 
     def post(self, request, *args, **kwargs):
         try:

@@ -157,10 +157,6 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class CategoryExploreSerializer(serializers.Serializer):
-    category_title = serializers.CharField()
-
-
-class MultiCategoryExploreSerializer(serializers.Serializer):
     category_title = serializers.ListField()
 '''
 class PostsCategoryExploreSerializer(serializers.ModelSerializer):
