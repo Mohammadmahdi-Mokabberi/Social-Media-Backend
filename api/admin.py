@@ -3,7 +3,12 @@ from .models import User, Posts, Followers, Category
 
 
 
-admin.site.register(User,)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ['id','email']
+
+
+admin.site.register(User,UserAdmin)
 admin.site.register(Posts,)
 admin.site.register(Followers,)
 admin.site.register(Category,)
+

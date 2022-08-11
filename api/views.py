@@ -8,11 +8,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from functools import reduce
 import operator
 
-from api.models import Category, Posts
-from .serializers import (CategorySerializer, ChangePasswordSerializer, LoginSerializer, 
-                          CategoryExploreSerializer,
+from api.models import Category, Followers, Posts
+from .serializers import (CategorySerializer, ChangePasswordSerializer, FollowingSerializer, 
+                          LoginSerializer, CategoryExploreSerializer,
                           RegisterSerializer,PostsSerializer, PostDetailSerializer,
-                          UserProfileSerializer)
+                          UserExploreSerializer, UserPostSerializer)
 
 User = get_user_model()
 
@@ -248,21 +248,26 @@ class PostDetailAPIView(generics.RetrieveAPIView):
 
 
 class UserProfileAPIView(generics.ListAPIView):
-    serializer_class = UserProfileSerializer
-    
-    def get_object(self):
-        return self.kwargs.get('pk')
-    
-    def get_queryset(self):
-        id = self.get_object()
-        user = User.objects.get(id=id)
-        return user
+    serializer_class = UserExploreSerializer
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         try :
-            user = self.get_queryset()
-            serializer = self.get_serializer(user)
-            return response_data(status_code=1, data=serializer.data)
+            username = request.data['username']
+            if not User.objects.filter(username=username).exists():
+                return response_data(status_code=0, message='User not found')
+            user = User.objects.get(username=username)
+            followers_qs = Followers.objects.get(user=user)
+            follower_serializer = FollowingSerializer(followers_qs)
+            post_qs = Posts.objects.filter(user=user)
+            post_serializer = PostsSerializer(post_qs,many=True)
+
+            data = {
+                'username' : user.username,
+                'name' : f'{user.first_name} {user.last_name}',
+                'followers_info' : follower_serializer.data,
+                'user_post_info' : post_serializer.data,
+            }
+            return response_data(status_code=1, data=data)
         except:
             return response_data(status_code=0, message='server error')
 

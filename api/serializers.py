@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Posts, User
+from .models import Category, Followers, Posts, User
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -122,32 +122,38 @@ class PostDetailSerializer(serializers.ModelSerializer):
         return 'None'
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
-    name = serializers.SerializerMethodField(source='get_name')
-    posts = serializers.SerializerMethodField(source='get_posts')
+class UserExploreSerializer(serializers.Serializer):
+    username = serializers.CharField()
+
+
+class FollowingSerializer(serializers.ModelSerializer):
     followers_count = serializers.SerializerMethodField(source='get_followers_count')
-
+    followers = serializers.SerializerMethodField(source='get_followers')
+    following_count = serializers.SerializerMethodField(source='get_following_count')
+    following = serializers.SerializerMethodField(source='get_following')
     class Meta:
-        model = User
+        model = Followers
         fields = [
-            'name',
-            'posts',
             'followers_count',
+            'followers',
+            'following_count',
+            'following'
         ]
-    
-    def get_name(self,obj):
-        if obj.username != '':
-            return obj.username
-        return obj.email
-    
-    def get_posts(self,obj):
-        qs = obj.author.all()
-        serializer = UserPostSerializer(qs, many=True)
-        return serializer.data
-    
     def get_followers_count(self,obj):
-        return obj.user_info.count()
+        return obj.followers.count()
+    
+    def get_following_count(self,obj):
+        return obj.following.count()
+    
+    def get_followers(self,obj):
+        qs = obj.followers
+        serializer = UserSerializer(qs,many=True)
+        return serializer.data
 
+    def get_following(self,obj):
+        qs = obj.following
+        serializer = UserSerializer(qs,many=True)
+        return serializer.data
 
 class CategorySerializer(serializers.ModelSerializer):
 
