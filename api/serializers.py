@@ -21,9 +21,13 @@ class ChangePasswordSerializer(serializers.Serializer):
 
 
 class PostsSerializer(serializers.ModelSerializer):
+    username = serializers.SerializerMethodField(source='get_username')
     class Meta:
         model = Posts
-        fields = ['id', 'title', 'user', 'image', 'video']
+        fields = ['id', 'title', 'username', 'image', 'video']
+
+    def get_username(self,obj):
+        return obj.user.username
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -154,6 +158,7 @@ class FollowingSerializer(serializers.ModelSerializer):
         qs = obj.following
         serializer = UserSerializer(qs,many=True)
         return serializer.data
+
 
 class CategorySerializer(serializers.ModelSerializer):
 
