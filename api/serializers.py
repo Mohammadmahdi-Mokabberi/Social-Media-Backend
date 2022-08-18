@@ -63,6 +63,12 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username']
 
 
+class ChangeProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'biography', 'photo', 'age', 'birth_date']
+
+
 class PostDetailSerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField(source='get_title')
     caption = serializers.SerializerMethodField(source='get_caption')

@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (LoginAPIView, ChangePasswordAPIView, RegisterAPIView,
                     PostDetailAPIView, PostsAPIView, CategoryAPIView,
                     PostsCategoryExploreAPIView,FollowAPIView, UnFollowAPIView,
-                    LikeAPIView, DislikeAPIView, UserProfileAPIView)
+                    LikeAPIView, DislikeAPIView, UserChangeProfileAPIView, UserProfileAPIView)
 urlpatterns = [
     path('v1/posts/all/', PostsAPIView.as_view(),),
     path('v1/posts/<int:pk>/', PostDetailAPIView.as_view(),),
@@ -16,4 +16,5 @@ urlpatterns = [
     path('v1/user/follow/<int:pk>/', FollowAPIView.as_view()),
     path('v1/user/unfollow/<int:pk>/', UnFollowAPIView.as_view()),
     path('v1/user/user-profile/',UserProfileAPIView.as_view(),),
+    path('v1/user/change-profile/',UserChangeProfileAPIView.as_view(),),
 ]

@@ -9,7 +9,7 @@ from functools import reduce
 import operator
 
 from api.models import Category, Followers, Posts
-from .serializers import (CategorySerializer, ChangePasswordSerializer, FollowingSerializer, 
+from .serializers import (CategorySerializer, ChangePasswordSerializer, ChangeProfileSerializer, FollowingSerializer, 
                           LoginSerializer, CategoryExploreSerializer,
                           RegisterSerializer,PostsSerializer, PostDetailSerializer,
                           UserExploreSerializer, UserPostSerializer)
@@ -247,7 +247,7 @@ class PostDetailAPIView(generics.RetrieveAPIView):
             return response_data(status_code=0, message='server error')
 
 
-class UserProfileAPIView(generics.ListAPIView):
+class UserProfileAPIView(generics.CreateAPIView):
     serializer_class = UserExploreSerializer
 
     def post(self, request, *args, **kwargs):
@@ -271,6 +271,28 @@ class UserProfileAPIView(generics.ListAPIView):
         except:
             return response_data(status_code=0, message='server error')
 
+
+class UserChangeProfileAPIView(generics.RetrieveUpdateAPIView):
+    serializer_class = ChangeProfileSerializer
+    def get_object(self):
+        return self.request.user
+    
+    def get(self, request, *args, **kwargs):
+        user = self.get_object()
+        serializer = self.get_serializer(user)
+        return response_data(status_code=1, data=serializer.data)
+    
+    def patch(self, request, *args, **kwargs):
+        user = self.get_object()
+        user.username = request.data['username']
+        user.first_name = request.data['first_name']
+        user.last_name = request.data['last_name']
+        user.biography = request.data['biography']
+        user.photo = request.data['photo']
+        user.age = request.data['age']
+        user.birth_date = request.data['birth_date']
+        user.save()
+        return response_data(status_code=1, message='Profile Updated')
 
 class CategoryAPIView(generics.ListAPIView):
     serializer_class = CategorySerializer

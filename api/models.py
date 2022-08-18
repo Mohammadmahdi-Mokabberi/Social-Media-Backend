@@ -42,9 +42,11 @@ class User(AbstractUser, PermissionsMixin):
     is_admin = models.BooleanField(default=False, verbose_name='ادمین؟')
     first_name = models.CharField(max_length=100, null=True, blank=True, verbose_name='نام')
     last_name = models.CharField(max_length=100, null=True, blank=True, verbose_name='نام خانوادگی')
+    photo = models.ImageField(upload_to='profiles-images/', blank=True, null=True,verbose_name='عکس پروفایل')
     username = models.CharField(max_length=100, unique=True, verbose_name='نام کاربری')
     email = models.EmailField(_('email address'), unique=True)
     age = models.CharField(max_length=3, null=True, blank=True, verbose_name='سن')
+    biography = models.CharField(max_length=1000, blank=True, null=True, verbose_name='بیوگرافی')
     birth_date = models.DateField(null=True, blank=True, verbose_name='تاریخ تولد')
     registered_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ ثبت نام')
 
