@@ -272,7 +272,7 @@ class UserProfileAPIView(generics.CreateAPIView):
             return response_data(status_code=0, message='server error')
 
 
-class UserChangeProfileAPIView(generics.RetrieveUpdateAPIView):
+class UserChangeProfileAPIView(generics.CreateAPIView):
     serializer_class = ChangeProfileSerializer
     def get_object(self):
         return self.request.user
@@ -282,7 +282,7 @@ class UserChangeProfileAPIView(generics.RetrieveUpdateAPIView):
         serializer = self.get_serializer(user)
         return response_data(status_code=1, data=serializer.data)
     
-    def patch(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         user = self.get_object()
         user.username = request.data['username']
         user.first_name = request.data['first_name']
