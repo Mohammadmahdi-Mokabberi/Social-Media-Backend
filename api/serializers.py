@@ -20,6 +20,12 @@ class ChangePasswordSerializer(serializers.Serializer):
     new_password2 = serializers.CharField()
 
 
+class EditPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Posts
+        fields = ['title', 'caption', 'category']
+
+
 class PostsSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField(source='get_username')
     class Meta:

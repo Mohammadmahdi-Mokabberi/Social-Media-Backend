@@ -1,10 +1,11 @@
 from django.urls import path
-from .views import (LoginAPIView, ChangePasswordAPIView, RegisterAPIView,
+from .views import (EditPostAPIView, LoginAPIView, ChangePasswordAPIView, RegisterAPIView,
                     PostDetailAPIView, PostsAPIView, CategoryAPIView,
                     PostsCategoryExploreAPIView,FollowAPIView, UnFollowAPIView,
                     LikeAPIView, DislikeAPIView, UserChangeProfileAPIView, UserProfileAPIView)
 urlpatterns = [
     path('v1/posts/all/', PostsAPIView.as_view(),),
+    path('v1/posts/edit-post/<int:pk>/', EditPostAPIView.as_view(),),
     path('v1/posts/<int:pk>/', PostDetailAPIView.as_view(),),
     path('v1/posts/<int:pk>/like/', LikeAPIView.as_view(),),
     path('v1/posts/<int:pk>/dislike/', DislikeAPIView.as_view(),),

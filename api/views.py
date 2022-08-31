@@ -9,7 +9,7 @@ from functools import reduce
 import operator
 
 from api.models import Category, Followers, Posts
-from .serializers import (CategorySerializer, ChangePasswordSerializer, ChangeProfileSerializer, FollowingSerializer, 
+from .serializers import (CategorySerializer, ChangePasswordSerializer, ChangeProfileSerializer, EditPostSerializer, FollowingSerializer, 
                           LoginSerializer, CategoryExploreSerializer,
                           RegisterSerializer,PostsSerializer, PostDetailSerializer,
                           UserExploreSerializer, UserPostSerializer)
@@ -294,6 +294,7 @@ class UserChangeProfileAPIView(generics.CreateAPIView):
         user.save()
         return response_data(status_code=1, message='Profile Updated')
 
+
 class CategoryAPIView(generics.ListAPIView):
     serializer_class = CategorySerializer
 
@@ -323,4 +324,44 @@ class PostsCategoryExploreAPIView(generics.CreateAPIView):
             serializer = PostsSerializer(posts, many=True)
             return response_data(status_code=1, data=serializer.data)
         except:
+            return response_data(status_code=0, message='server error')
+
+
+class EditPostAPIView(generics.CreateAPIView):
+    serializer_class = EditPostSerializer
+    
+    def get_object(self):
+        return self.kwargs.get('pk')
+    
+    def get_user(self):
+        return self.request.user
+
+    def get(self, request, *args, **kwargs):
+        try:
+            user = self.get_user()
+            post_id = self.get_object()
+            if not Posts.objects.filter(id=post_id).exists():
+                return response_data(status_code=0, message='post not found')
+            post = Posts.objects.get(id=post_id)
+
+            serializer = PostDetailSerializer(post)
+            return response_data(status_code=1, data=serializer.data)
+        except:
+            return response_data(status_code=0, message='server error')
+    
+    def post(self, request, *args, **kwargs):
+        #try:
+            user = self.get_user()
+            post_id = self.get_object()
+            if not Posts.objects.filter(id=post_id).exists():
+                return response_data(status_code=0, message='post not found')
+            post = Posts.objects.get(id=post_id)
+            if user != post.user :
+                return response_data(status_code=0, message='no permission')
+            post.title = request.data['title']
+            post.category.set(request.data['category'])
+            post.caption = request.data['caption']
+            post.save()
+            return response_data(status_code=1)
+        #except:
             return response_data(status_code=0, message='server error')
